@@ -1,35 +1,42 @@
-# Imports a GO alpine image as the builder
+FROM alpine:latest as os
+
+ARG APP_VER=1.0.0
+ARG APP_NAME=golang-boilerplate
+
+# set environment
+ENV APP_VER=$APP_VER
+ENV APP_NAME=$APP_NAME
+ENV ENV APP_PORT=3000
+
+# create builder
 FROM golang:1.14-alpine AS builder
 
-# Sets environment variables necessary for building
-ENV GO111MODULE=on \
-    CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64
-
-# Creates the source's directory
+# create directory
 RUN mkdir -p /src
 
-# Sets the work directory to source's folder
+# set directory
 WORKDIR /src
 
-# Copy files into source's folder
+# copy file ke source
 COPY ./src .
 
-# Install the dependencies
+# Install Dependency
+RUN go mod tidy
 RUN go mod download
 
-# Builds the application
+# build aplikasi
 RUN go build -o api api.go
 
-# Creates a smaller-sized image
 FROM scratch
 
-# Sets the work directory to distribution's folder
-WORKDIR /dist
+#WORKDIR /dist
 
 # Copies the binary from the builder
 COPY --from=builder /src/api ./
 
-# Runs the application
+# port yang digunakan
+EXPOSE $APP_PORT
+
+# jalankan aplikasi
 CMD ["./api"]
+
